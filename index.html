@@ -26,6 +26,7 @@ function EtherMiningCtrl($scope, $http, $log) {
         $scope.earnings.hour = $scope.earnings.min * 60;
         $scope.earnings.day = $scope.earnings.hour * 24;
         $scope.earnings.week = $scope.earnings.day * 7;
+        $scope.earnings.month = $scope.earnings.day * 30;
     };
 }
 
@@ -75,8 +76,17 @@ Blocktime: <input type="text" ng-model="blockTime" ng-change="computeProfits()"/
             <td>{{earnings.week|number:6}}</td>
             <td>{{earnings.week*ethPrice|currency}}</td>
         </tr>
+        <tr>
+            <td>Month</td>
+            <td>{{earnings.month|number:6}}</td>
+            <td>{{earnings.month*ethPrice|currency}}</td>
+        </tr>
     </tbody>
 </table>
+
+<p>This is alpha software.  Let me know if you see any bugs.</p>
+
+<p>Hashrate and Blocktime calculated by looking at the last 64 blocks.  Price from coinmarketcap.  Data updated every 10 minutes.</p>
 
 <p>Inspired by <a href="http://mining-ether.com/">http://mining-ether.com/</a> which unfortunately does not work without plugins.</p>
 
