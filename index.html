@@ -1,0 +1,101 @@
+<html ng-app="ether">
+<title>Ethereum Mining Profitability Calculator</title>
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
+<script src="//ajax.googleapis.com/ajax/libs/angularjs/1.3.15/angular.min.js"></script>
+<script src="//ajax.googleapis.com/ajax/libs/angularjs/1.3.15/angular-resource.min.js"></script>
+<script src="//cdnjs.cloudflare.com/ajax/libs/bignumber.js/2.0.7/bignumber.js"></script>
+
+<script>
+
+angular.module('ether', ['ngResource']).config(['$controllerProvider', function($controllerProvider) {
+    $controllerProvider.allowGlobals();
+}]);
+
+function EtherMiningCtrl($scope, $http, $log) {
+
+    $scope.ethPrice = 2.75;
+
+    var params = {'format': 'json', q: "select * from json where url='https://etherchain.org/api/basic_stats'"};
+    $http.get('https://query.yahooapis.com/v1/public/yql', {params: params}).
+        then(function(response) {
+            if ( response.data ) {
+                $log.log(response.data)
+                var data = response.data.query.results.json.data;
+                var blockTimeSum = 0;
+                var difficultySum = new BigNumber(0);
+                for (var d = 0; d < data.blocks.length; d++) {
+                    blockTimeSum += parseInt(data.blocks[d].blockTime);
+                    difficultySum = difficultySum.plus(new BigNumber(data.blocks[d].difficulty));
+                }
+                var blockTimeAvg = blockTimeSum / data.blocks.length;
+                var difficultyAvg = difficultySum.div(data.blocks.length);
+
+                $scope.netHash = difficultyAvg.div(blockTimeAvg);
+                $scope.blockTime = blockTimeAvg;
+            }
+        });
+
+    $scope.earnings = {};
+
+    $scope.computeProfits = function() {
+        var userRatio = $scope.userHash * 1e6 / $scope.netHash;
+        var blocksPerMin = 60.0 / $scope.blockTime;
+        var ethPerMin = blocksPerMin * 5.0;
+        $scope.earnings.min = userRatio * ethPerMin;
+        $scope.earnings.hour = $scope.earnings.min * 60;
+        $scope.earnings.day = $scope.earnings.hour * 24;
+        $scope.earnings.week = $scope.earnings.day * 7;
+    };
+}
+
+</script>
+</head>
+
+<body ng-controller="EtherMiningCtrl">
+
+<h2> Ethereum Mining Profitability Calculator </h2>
+
+<p> Calculate how much Ether (ETH) <b>should</b> be mined with a specific hashrate. </p>
+
+<form ng-submit="computeProfits()">
+Your Hashrate: <input type="text" ng-model="userHash" placeholder="your hashrate MH/s" ng-change="computeProfits()"/> MH/s<br/>
+Network Hashrate: <input type="text" ng-model="netHash/1e9|number:3" ng-change="computeProfits()"/> GH/s<br/>
+Blocktime: <input type="text" ng-model="blockTime|number:3" ng-change="computeProfits()"/> seconds<br/>
+1 ETH Price: <input type="text" ng-model="ethPrice" ng-change="computeProfits()"/> USD (this may not be up to date)<br/>
+</form>
+
+<h3>Earnings (ETH)</h3>
+<table border="1">
+    <thead>
+        <tr>
+            <th>Period</th>
+            <th>ETH</th>
+            <th>USD</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>Minute</td>
+            <td>{{earnings.min|number:6}}</td>
+            <td>{{earnings.min*ethPrice|currency}}</td>            
+        </tr>
+        <tr>
+            <td>Hour</td>
+            <td>{{earnings.hour|number:6}}</td>
+            <td>{{earnings.hour*ethPrice|currency}}</td>
+        </tr>
+        <tr>
+            <td>Day</td>
+            <td>{{earnings.day|number:6}}</td>
+            <td>{{earnings.day*ethPrice|currency}}</td>
+        </tr>
+        <tr>
+            <td>Week</td>
+            <td>{{earnings.week|number:6}}</td>
+            <td>{{earnings.week*ethPrice|currency}}</td>
+        </tr>
+    </tbody>
+</table>
+
+</body>
+</html>
