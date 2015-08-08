@@ -4,7 +4,7 @@
 <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.3.15/angular.min.js"></script>
 <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.3.15/angular-resource.min.js"></script>
 <script src="//cdnjs.cloudflare.com/ajax/libs/bignumber.js/2.0.7/bignumber.js"></script>
-
+<script src="http://alpha61.com/ethereum.json"></script>
 <script>
 
 angular.module('ether', ['ngResource']).config(['$controllerProvider', function($controllerProvider) {
@@ -13,32 +13,13 @@ angular.module('ether', ['ngResource']).config(['$controllerProvider', function(
 
 function EtherMiningCtrl($scope, $http, $log) {
 
-    $scope.ethPrice = 2.75;
-
-    var params = {'format': 'json', q: "select * from json where url='https://etherchain.org/api/basic_stats'"};
-    $http.get('https://query.yahooapis.com/v1/public/yql', {params: params}).
-        then(function(response) {
-            if ( response.data ) {
-                $log.log(response.data)
-                var data = response.data.query.results.json.data;
-                var blockTimeSum = 0;
-                var difficultySum = new BigNumber(0);
-                for (var d = 0; d < data.blocks.length; d++) {
-                    blockTimeSum += parseInt(data.blocks[d].blockTime);
-                    difficultySum = difficultySum.plus(new BigNumber(data.blocks[d].difficulty));
-                }
-                var blockTimeAvg = blockTimeSum / data.blocks.length;
-                var difficultyAvg = difficultySum.div(data.blocks.length);
-
-                $scope.netHash = difficultyAvg.div(blockTimeAvg);
-                $scope.blockTime = blockTimeAvg;
-            }
-        });
-
+    $scope.ethPrice = ethereumStats.priceUsd;
+    $scope.netHashGH = (ethereumStats.difficulty / ethereumStats.blockTime) / 1e9;
+    $scope.blockTime = ethereumStats.blockTime;
     $scope.earnings = {};
 
     $scope.computeProfits = function() {
-        var userRatio = $scope.userHash * 1e6 / $scope.netHash;
+        var userRatio = $scope.userHash * 1e6 / ($scope.netHashGH * 1e9);
         var blocksPerMin = 60.0 / $scope.blockTime;
         var ethPerMin = blocksPerMin * 5.0;
         $scope.earnings.min = userRatio * ethPerMin;
@@ -59,9 +40,9 @@ function EtherMiningCtrl($scope, $http, $log) {
 
 <form ng-submit="computeProfits()">
 Your Hashrate: <input type="text" ng-model="userHash" placeholder="your hashrate MH/s" ng-change="computeProfits()"/> MH/s<br/>
-Network Hashrate: <input type="text" ng-model="netHash/1e9|number:3" ng-change="computeProfits()"/> GH/s<br/>
-Blocktime: <input type="text" ng-model="blockTime|number:3" ng-change="computeProfits()"/> seconds<br/>
-1 ETH Price: <input type="text" ng-model="ethPrice" ng-change="computeProfits()"/> USD (this may not be up to date)<br/>
+Network Hashrate: <input type="text" ng-model="netHashGH" ng-change="computeProfits()"/> GH/s<br/>
+Blocktime: <input type="text" ng-model="blockTime" ng-change="computeProfits()"/> seconds<br/>
+1 ETH Price: <input type="text" ng-model="ethPrice" ng-change="computeProfits()"/> USD<br/>
 </form>
 
 <h3>Earnings (ETH)</h3>
