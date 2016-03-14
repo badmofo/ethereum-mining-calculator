@@ -85,6 +85,17 @@ function EtherMiningCtrl($scope, $http, $log) {
             <input type="text" ng-model="userHash" placeholder="your hashrate MH/s" ng-change="computeProfits()"/> MH/s
             <select ng-model="userChoice" ng-change="updateUserHash()">
                 <option value="">Choose Your GPU</option>
+                <option value="76.5">5 x AMD HD 7950 - Windows x64</option>
+				<option value="100.5">5 x AMD HD 7970 - Windows x64</option>
+				<option value="101.5">5 x AMD R9 380x - Windows x64</option>
+				<option value="99.5">5 x AMD R9 280X - Windows x64</option>
+				<option value="116.0">5 x AMD R9 290X - Ubuntu 10.04</option>
+				<option value="112.5">5 x AMD R9 280X - Ubuntu 14.04</option>
+				<option value="61.0">5 x AMD 7870 - Linux Mint</option>
+                <option value="75.0">5 x AMD R7 370</option>
+                <option value="50.0">5 x GTX 960</option>			
+				<option value="15.3">AMD HD 7950 - Windows x64</option>
+				<option value="20.1">AMD HD 7970 - Windows x64</option>
                 <option value="23.2">AMD R9 290X - Ubuntu 10.04</option>
                 <option value="22.5">AMD R9 280X - Ubuntu 14.04</option>
                 <option value="12.2">AMD 7870 - Linux Mint</option>
