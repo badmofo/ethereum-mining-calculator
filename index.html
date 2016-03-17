@@ -1,5 +1,12 @@
 <html ng-app="ether">
   <title>Ethereum Mining Profitability Calculator</title>
+  
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+
+  <meta name="title" content="Ethereum Mining Profitability Calculator">
+  <meta name="keywords" content="ethereum mining calculator, ethereum profitability calculator, ethereum mining calc, eth mining calculator, ethereum calculator">
+  <meta name="description" content="The best and more accurate ethereum mining calculator">
+
   <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
 
   <style>
@@ -10,20 +17,23 @@
 </head>
 
 <body ng-controller="EtherMiningCtrl" ng-cloak>
-  <div class="contaner">
-    <div class="text-center">
+  <div class="container">
+    <div class="row text-center">
       <h1>Ethereum Mining Profitability Calculator</h1>
     </div>
+  </div>
 
-    <hr />
-    
+  <hr />
+  
+  <div class="container">
     <div class="row">
-      <div class="container">
-        <div class="col-lg-6">
-          <h2>Calculator*</h2>
+      <div class="col-lg-6">
+        <h2>Calculator*</h2>
 
-          <form ng-submit="computeProfits()">
-            <div class="form-group">
+        <form ng-submit="computeProfits()" class="form-horizontal">
+          <div class="form-group">
+            <label class="col-lg-5 control-label">Pick GPU..</label>
+            <div class="col-lg-7">
               <select ng-model="userChoice" ng-change="updateUserHash()" class="form-control">
                 <option value="">Choose Your GPU</option>
                 <option value="76.5">5 x AMD HD 7950 - Windows x64</option>
@@ -44,7 +54,10 @@
                 <option value="10.0">GTX 960</option>
               </select>
             </div>
-            <div class="form-group">
+          </div>
+          <div class="form-group">
+            <label class="col-lg-5 control-label">..or enter hashrate manually</label>
+            <div class="col-lg-7">
               <input 
                 type="text" 
                 class="form-control" 
@@ -52,7 +65,10 @@
                 placeholder="Your hashrate in MH/s"
                 ng-change="computeProfits()"/>
             </div>
-            <div class="form-group">
+          </div>
+          <div class="form-group">
+            <label class="col-lg-5 control-label">Network hashrate</label>
+            <div class="col-lg-7">
               <input 
                 type="text" 
                 class="form-control" 
@@ -60,7 +76,10 @@
                 placeholder="Network Hashrate"
                 ng-change="computeProfits()"/>
             </div>
-            <div class="form-group">
+          </div>
+          <div class="form-group">
+            <label class="col-lg-5 control-label">Blocktime</label>
+            <div class="col-lg-7">
               <input 
                 type="text" 
                 class="form-control" 
@@ -68,7 +87,10 @@
                 placeholder="Network Hashrate"
                 ng-change="computeProfits()"/>
             </div>
-            <div class="form-group">
+          </div>
+          <div class="form-group">
+            <label class="col-lg-5 control-label">1 ETH price</label>
+            <div class="col-lg-7">
               <input 
                 type="text" 
                 class="form-control" 
@@ -76,55 +98,58 @@
                 placeholder="Network Hashrate"
                 ng-change="computeProfits()"/>
             </div>
-          </form>
-          <p class="text-muted">
-            *Calculate how much Ether (ETH) <b>should</b> be mined with a specific hashrate.
-          </p>
-        </div>
-        <div class="col-lg-6">
-          <h2>Earnings (ETH)</h2>
+          </div>
+        </form>
+        <p class="text-muted">
+          *Calculate how much Ether (ETH) <b>should</b> be mined with a specific hashrate.
+        </p>
+      </div>
+      <div class="col-lg-6">
+        <h2>Earnings (ETH)</h2>
 
-          <table class="table table-striped">
-            <thead>
-              <tr>
-                <th class="col-lg-4">Period</th>
-                <th class="col-lg-4 text-center">ETH</th>
-                <th class="col-lg-4 text-center">USD</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td>Minute</td>
-                <td ng-bind="earnings.min | number:6"></td>
-                <td ng-bind="earnings.min*ethPrice | currency"></td>
-              </tr>
-              <tr>
-                <td>Hour</td>
-                <td ng-bind="earnings.hour | number:6"></td>
-                <td ng-bind="earnings.hour*ethPrice | currency"></td>
-              </tr>
-              <tr>
-                <td>Day</td>
-                <td ng-bind="earnings.day | number:6"></td>
-                <td ng-bind="earnings.day*ethPrice | currency"></td>
-              </tr>
-              <tr>
-                <td>Week</td>
-                <td ng-bind="earnings.week | number:6"</td>
-                <td ng-bind="earnings.week*ethPrice | currency"</td>
-              </tr>
-              <tr>
-                <td>Month</td>
-                <td ng-bind="earnings.month | number:6"</td>
-                <td ng-bind="earnings.month*ethPrice | currency"</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
+        <table class="table table-striped">
+          <thead>
+            <tr>
+              <th class="col-lg-4">Period</th>
+              <th class="col-lg-4 text-center">ETH</th>
+              <th class="col-lg-4 text-center">USD</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Minute</td>
+              <td ng-bind="earnings.min | number:6"></td>
+              <td ng-bind="earnings.min*ethPrice | currency"></td>
+            </tr>
+            <tr>
+              <td>Hour</td>
+              <td ng-bind="earnings.hour | number:6"></td>
+              <td ng-bind="earnings.hour*ethPrice | currency"></td>
+            </tr>
+            <tr>
+              <td>Day</td>
+              <td ng-bind="earnings.day | number:6"></td>
+              <td ng-bind="earnings.day*ethPrice | currency"></td>
+            </tr>
+            <tr>
+              <td>Week</td>
+              <td ng-bind="earnings.week | number:6"></td>
+              <td ng-bind="earnings.week*ethPrice | currency"></td>
+            </tr>
+            <tr>
+              <td>Month</td>
+              <td ng-bind="earnings.month | number:6"></td>
+              <td ng-bind="earnings.month*ethPrice | currency"></td>
+            </tr>
+          </tbody>
+        </table>
       </div>
     </div>
+  </div>
+
+  <div class="container">
     <div class="row">
-      <div class="container">
+      <div class="col-lg-12">
         <h2>Notes</h2>
         <ul>
           <li>This is alpha software. Let me know if you see any bugs.</li>
@@ -133,8 +158,11 @@
         </ul>
       </div>
     </div>
+  </div>
+
+  <div class="container">
     <div class="row">
-      <div class="container">
+      <div class="col-lg-12">
         <h2>References</h2>
         <ul>
           <li>
