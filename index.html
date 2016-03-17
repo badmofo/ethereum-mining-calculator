@@ -1,25 +1,198 @@
 <html ng-app="ether">
-<title>Ethereum Mining Profitability Calculator</title>
-<!-- src="//..." broke for local copies (file!), so we opted for https -->
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
-<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.3.15/angular.min.js"></script>
-<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.3.15/angular-resource.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/bignumber.js/2.0.7/bignumber.js"></script>
-<script src="//alpha61.com/ethereum.json"></script>
-<script>
+  <title>Ethereum Mining Profitability Calculator</title>
+  
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 
-angular.module('ether', ['ngResource']).config(['$controllerProvider', function($controllerProvider) {
-    $controllerProvider.allowGlobals();
-}]);
+  <meta name="title" content="Ethereum Mining Profitability Calculator">
+  <meta name="keywords" content="ethereum mining calculator, ethereum profitability calculator, ethereum mining calc, eth mining calculator, ethereum calculator">
+  <meta name="description" content="The best and more accurate ethereum mining calculator">
 
-function EtherMiningCtrl($scope, $http, $log) {
+  <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
 
-    $scope.ethPrice = ethereumStats.priceUsd;
-    $scope.netHashGH = (ethereumStats.difficulty / ethereumStats.blockTime) / 1e9;
-    $scope.blockTime = ethereumStats.blockTime;
-    $scope.earnings = {};
+  <style>
+    [ng\:cloak], [ng-cloak], [data-ng-cloak], [x-ng-cloak], .ng-cloak, .x-ng-cloak {
+      display: none !important;
+    }
+  </style>
+</head>
 
-    $scope.computeProfits = function() {
+<body ng-controller="EtherMiningCtrl" ng-cloak>
+  <div class="container">
+    <div class="row text-center">
+      <h1>Ethereum Mining Profitability Calculator</h1>
+    </div>
+  </div>
+
+  <hr />
+  
+  <div class="container">
+    <div class="row">
+      <div class="col-lg-6">
+        <h2>Calculator*</h2>
+
+        <form ng-submit="computeProfits()" class="form-horizontal">
+          <div class="form-group">
+            <label class="col-lg-5 control-label">Pick GPU..</label>
+            <div class="col-lg-7">
+              <select ng-model="userChoice" ng-change="updateUserHash()" class="form-control">
+                <option value="">Choose Your GPU</option>
+                <option value="76.5">5 x AMD HD 7950 - Windows x64</option>
+                <option value="100.5">5 x AMD HD 7970 - Windows x64</option>
+                <option value="101.5">5 x AMD R9 380x - Windows x64</option>
+                <option value="99.5">5 x AMD R9 280X - Windows x64</option>
+                <option value="116.0">5 x AMD R9 290X - Ubuntu 10.04</option>
+                <option value="112.5">5 x AMD R9 280X - Ubuntu 14.04</option>
+                <option value="61.0">5 x AMD 7870 - Linux Mint</option>
+                <option value="75.0">5 x AMD R7 370</option>
+                <option value="50.0">5 x GTX 960</option>     
+                <option value="15.3">AMD HD 7950 - Windows x64</option>
+                <option value="20.1">AMD HD 7970 - Windows x64</option>
+                <option value="23.2">AMD R9 290X - Ubuntu 10.04</option>
+                <option value="22.5">AMD R9 280X - Ubuntu 14.04</option>
+                <option value="12.2">AMD 7870 - Linux Mint</option>
+                <option value="15.0">AMD R7 370</option>
+                <option value="10.0">GTX 960</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="col-lg-5 control-label">..or enter hashrate manually</label>
+            <div class="col-lg-7">
+              <input 
+                type="text" 
+                class="form-control" 
+                ng-model="userHash" 
+                placeholder="Your hashrate in MH/s"
+                ng-change="computeProfits()"/>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="col-lg-5 control-label">Network hashrate</label>
+            <div class="col-lg-7">
+              <input 
+                type="text" 
+                class="form-control" 
+                ng-model="netHashGH" 
+                placeholder="Network Hashrate"
+                ng-change="computeProfits()"/>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="col-lg-5 control-label">Blocktime</label>
+            <div class="col-lg-7">
+              <input 
+                type="text" 
+                class="form-control" 
+                ng-model="blockTime" 
+                placeholder="Network Hashrate"
+                ng-change="computeProfits()"/>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="col-lg-5 control-label">1 ETH price</label>
+            <div class="col-lg-7">
+              <input 
+                type="text" 
+                class="form-control" 
+                ng-model="ethPrice" 
+                placeholder="Network Hashrate"
+                ng-change="computeProfits()"/>
+            </div>
+          </div>
+        </form>
+        <p class="text-muted">
+          *Calculate how much Ether (ETH) <b>should</b> be mined with a specific hashrate.
+        </p>
+      </div>
+      <div class="col-lg-6">
+        <h2>Earnings (ETH)</h2>
+
+        <table class="table table-striped">
+          <thead>
+            <tr>
+              <th class="col-lg-4">Period</th>
+              <th class="col-lg-4 text-center">ETH</th>
+              <th class="col-lg-4 text-center">USD</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Minute</td>
+              <td ng-bind="earnings.min | number:6"></td>
+              <td ng-bind="earnings.min*ethPrice | currency"></td>
+            </tr>
+            <tr>
+              <td>Hour</td>
+              <td ng-bind="earnings.hour | number:6"></td>
+              <td ng-bind="earnings.hour*ethPrice | currency"></td>
+            </tr>
+            <tr>
+              <td>Day</td>
+              <td ng-bind="earnings.day | number:6"></td>
+              <td ng-bind="earnings.day*ethPrice | currency"></td>
+            </tr>
+            <tr>
+              <td>Week</td>
+              <td ng-bind="earnings.week | number:6"></td>
+              <td ng-bind="earnings.week*ethPrice | currency"></td>
+            </tr>
+            <tr>
+              <td>Month</td>
+              <td ng-bind="earnings.month | number:6"></td>
+              <td ng-bind="earnings.month*ethPrice | currency"></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="container">
+    <div class="row">
+      <div class="col-lg-12">
+        <h2>Notes</h2>
+        <ul>
+          <li>This is alpha software. Let me know if you see any bugs.</li>
+          <li>Hashrate and Blocktime calculated by looking at the last 64 blocks. The price is from coinmarketcap. Data is updated every 10 minutes.</li>
+          <li>This calculator does not take into account uncles.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="container">
+    <div class="row">
+      <div class="col-lg-12">
+        <h2>References</h2>
+        <ul>
+          <li>
+            <a href="https://forum.ethereum.org/discussion/2134/gpu-mining-is-out-come-and-let-us-know-of-your-bench-scores">GPU Mining Scores</a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
+  <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.3.15/angular.min.js"></script>
+  <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.3.15/angular-resource.min.js"></script>
+  <script src="//cdnjs.cloudflare.com/ajax/libs/bignumber.js/2.0.7/bignumber.js"></script>
+  <script src="//alpha61.com/ethereum.json"></script>
+  <script>
+
+    angular.module('ether', ['ngResource']).config(['$controllerProvider', function($controllerProvider) {
+      $controllerProvider.allowGlobals();
+    }]);
+
+    function EtherMiningCtrl($scope, $http, $log) {
+
+      $scope.ethPrice = ethereumStats.priceUsd;
+      $scope.netHashGH = (ethereumStats.difficulty / ethereumStats.blockTime) / 1e9;
+      $scope.blockTime = ethereumStats.blockTime;
+      $scope.earnings = {};
+
+      $scope.computeProfits = function() {
         var userRatio = $scope.userHash * 1e6 / ($scope.netHashGH * 1e9);
         var blocksPerMin = 60.0 / $scope.blockTime;
         var ethPerMin = blocksPerMin * 5.0;
@@ -28,148 +201,15 @@ function EtherMiningCtrl($scope, $http, $log) {
         $scope.earnings.day = $scope.earnings.hour * 24;
         $scope.earnings.week = $scope.earnings.day * 7;
         $scope.earnings.month = $scope.earnings.day * 30;
-    };
+      };
 
-    $scope.updateUserHash = function() {
+      $scope.updateUserHash = function() {
         var value = $scope.userChoice;
         $scope.userHash = value;
         $scope.computeProfits();
-    };
-}
-</script>
-<style>
-  body {
-    font-family: sans-serif;
-    margin-left: 20px;
-    margin-top: 20px;
-  }
-  table,
-  td, th {
-    border-collapse: collapse;
-    border: 1px black solid;
-    padding: 4px;
-    margin-left: 6px;
-    margin-right: 6px;
-  }
-  th {
-    background: #d0ffd0;
-  }
-  h1 {
-    border-bottom: 1px blue solid;    
-  }
-  h2, h3, h4, h5, h6 {
-      border-bottom: 1px black solid;
-      padding-top: 15px;
-      color: #424242;
-  }
-  h1 {
-    font-size: 1.4em;
-  }
-  h2 {
-    font-size: 1.2em;
-  }
-</style>
-</head>
-
-<body ng-controller="EtherMiningCtrl">
-
-<h1>Ethereum Mining Profitability Calculator</h1>
-
-<p>Calculate how much Ether (ETH) <b>should</b> be mined with a specific hashrate.</p>
-
-<form ng-submit="computeProfits()">
-    <table>
-    <tr>
-        <th>Your Hashrate:</th>
-        <td>
-            <input type="text" ng-model="userHash" placeholder="your hashrate MH/s" ng-change="computeProfits()"/> MH/s
-            <select ng-model="userChoice" ng-change="updateUserHash()">
-                <option value="">Choose Your GPU</option>
-                <option value="76.5">5 x AMD HD 7950 - Windows x64</option>
-		<option value="100.5">5 x AMD HD 7970 - Windows x64</option>
-		<option value="101.5">5 x AMD R9 380x - Windows x64</option>
-		<option value="99.5">5 x AMD R9 280X - Windows x64</option>
-		<option value="116.0">5 x AMD R9 290X - Ubuntu 10.04</option>
-		<option value="112.5">5 x AMD R9 280X - Ubuntu 14.04</option>
-		<option value="61.0">5 x AMD 7870 - Linux Mint</option>
-                <option value="75.0">5 x AMD R7 370</option>
-                <option value="50.0">5 x GTX 960</option>			
-		<option value="15.3">AMD HD 7950 - Windows x64</option>
-		<option value="20.1">AMD HD 7970 - Windows x64</option>
-                <option value="23.2">AMD R9 290X - Ubuntu 10.04</option>
-                <option value="22.5">AMD R9 280X - Ubuntu 14.04</option>
-                <option value="12.2">AMD 7870 - Linux Mint</option>
-                <option value="15.0">AMD R7 370</option>
-                <option value="10.0">GTX 960</option>
-            </select>
-        </td>
-    </tr>
-    <tr>
-        <th>Network Hashrate:</th>
-        <td><input type="text" ng-model="netHashGH" ng-change="computeProfits()"/> GH/s</td>
-    </tr>
-    <tr>
-        <th>Blocktime:</th>
-        <td><input type="text" ng-model="blockTime" ng-change="computeProfits()"/> seconds</td>
-    </tr>
-    <tr>
-        <th>1 ETH Price:</th>
-        <td><input type="text" ng-model="ethPrice" ng-change="computeProfits()"/> USD</td>
-    </tr>
-</table>
-</form>
-
-<h2>Earnings (ETH)</h2>
-<table>
-    <thead>
-        <tr>
-            <th>Period</th>
-            <th>ETH</th>
-            <th>USD</th>
-        </tr>
-    </thead>
-    <tbody>
-        <tr>
-            <td>Minute</td>
-            <td>{{earnings.min|number:6}}</td>
-            <td>{{earnings.min*ethPrice|currency}}</td>            
-        </tr>
-        <tr>
-            <td>Hour</td>
-            <td>{{earnings.hour|number:6}}</td>
-            <td>{{earnings.hour*ethPrice|currency}}</td>
-        </tr>
-        <tr>
-            <td>Day</td>
-            <td>{{earnings.day|number:6}}</td>
-            <td>{{earnings.day*ethPrice|currency}}</td>
-        </tr>
-        <tr>
-            <td>Week</td>
-            <td>{{earnings.week|number:6}}</td>
-            <td>{{earnings.week*ethPrice|currency}}</td>
-        </tr>
-        <tr>
-            <td>Month</td>
-            <td>{{earnings.month|number:6}}</td>
-            <td>{{earnings.month*ethPrice|currency}}</td>
-        </tr>
-    </tbody>
-</table>
-
-<h2>Notes</h2>
-
-<ul>
-    <li>This is alpha software. Let me know if you see any bugs.</li>
-    <li>Hashrate and Blocktime calculated by looking at the last 64 blocks. The price is from coinmarketcap. Data is updated every 10 minutes.</li>
-    <li>This calculator does not take into account uncles.</li>
-    <li>OMG please <a href="https://github.com/badmofo/ethereum-mining-calculator/tree/gh-pages">fork me</a> I'm the second-ugliest page in the world.</li>
-</ul>
-
-<h2>References</h2>
-<ul>
-    <li><a href="https://forum.ethereum.org/discussion/2134/gpu-mining-is-out-come-and-let-us-know-of-your-bench-scores">GPU Mining Scores</a></li>
-</ul>
+      };
+    }
+  </script>
 
 </body>
 </html>
