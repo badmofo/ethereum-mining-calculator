@@ -144,6 +144,11 @@
               <td ng-bind="earnings.month | number:6"></td>
               <td ng-bind="earnings.month*ethPrice | currency"></td>
             </tr>
+            <tr>
+              <td>Year</td>
+              <td ng-bind="earnings.year | number:6"></td>
+              <td ng-bind="earnings.year*ethPrice | currency"></td>
+            </tr>
           </tbody>
         </table>
       </div>
@@ -204,6 +209,7 @@
         $scope.earnings.day = $scope.earnings.hour * 24;
         $scope.earnings.week = $scope.earnings.day * 7;
         $scope.earnings.month = $scope.earnings.day * 30;
+        $scope.earnings.year = $scope.earnings.day * 365;
       };
 
       $scope.updateUserHash = function() {
