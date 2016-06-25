@@ -50,6 +50,8 @@
                 <option value="23.2">AMD R9 290X - Ubuntu 10.04</option>
                 <option value="22.5">AMD R9 280X - Ubuntu 14.04</option>
                 <option value="19.0">AMD R9 380 - Windows x64</option>
+                <option value="29.0">XFX R9 390 - Windows x64</option>
+                <option value="27.5">XFX R9 390x - Windows x64</option>
                 <option value="12.2">AMD 7870 - Linux Mint</option>
                 <option value="15.0">AMD R7 370</option>
                 <option value="10.0">GTX 960</option>
@@ -144,6 +146,11 @@
               <td ng-bind="earnings.month | number:6"></td>
               <td ng-bind="earnings.month*ethPrice | currency"></td>
             </tr>
+            <tr>
+              <td>Year</td>
+              <td ng-bind="earnings.year | number:6"></td>
+              <td ng-bind="earnings.year*ethPrice | currency"></td>
+            </tr>
           </tbody>
         </table>
       </div>
@@ -205,6 +212,7 @@
         $scope.earnings.day = $scope.earnings.hour * 24;
         $scope.earnings.week = $scope.earnings.day * 7;
         $scope.earnings.month = $scope.earnings.day * 30;
+        $scope.earnings.year = $scope.earnings.day * 365;
       };
 
       $scope.updateUserHash = function() {
